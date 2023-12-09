@@ -1,0 +1,235 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "get_project_activities",
+      "description": "Get the activities for the projects that I have worked on for a given month",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "current_user": {
+            "type": "string",
+            "description": "The user for whom to fetch activities"
+          },
+          "current_date": {
+            "type": "string",
+            "format": "date",
+            "description": "The date for which I want to obtain the activities."
+          }
+        },
+        "required": [
+          "current_date",
+          "current_user"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_projects_for_user",
+      "description": "Get the list of projects available for the currently connected user.",
+      "parameters": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "The unique identifier of the user - email address."
+          }
+        },
+        "required": [
+          "email"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_all_employees",
+      "description": "Get the list of all employees registered in the system."
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_employee",
+      "description": "Register a new employee in the system.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "The unique identifier of the employee. Their email address."
+          },
+          "name": {
+            "type": "string",
+            "description": "Their first name. Example John"
+          },
+          "lastname": {
+            "type": "string",
+            "description": "Their last name. Example Smith"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "user"
+            ],
+            "description": "The role of the employee. admin or user"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "lastname",
+          "role"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_all_projects",
+      "description": "Get the list of all projects in the system. The projects contain also their assigned users ."
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "create_project",
+      "description": "Create a new project",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "The unique identifier of the project."
+          },
+          "name": {
+            "type": "string",
+            "description": "A user friendly name for the project."
+          },
+          "client": {
+            "type": "string",
+            "description": "The client this project is associated to."
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "client"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "assign_project_to_employee",
+      "description": "Assign a reporting project to a user.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "project_code": {
+            "type": "string",
+            "description": "The code of the project that this user will be assigned to."
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the user to assign to the project."
+          }
+        },
+        "required": [
+          "email",
+          "project_code"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_activity",
+      "description": "Add an activity for a project for a given date.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "project_code": {
+            "type": "string",
+            "description": "The code of the project that this user will be assigned to."
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the user to assign to the project."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "The date of the activity"
+          },
+          "work_time": {
+            "description": "The amount of time to report in percents of the day. Example 0, 25, 50, 75 or 100. ",
+            "enum": [
+              0,
+              25,
+              50,
+              75,
+              100
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "project_code",
+          "date",
+          "work_time"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "add_absence",
+      "description": "Add a leave or an absence for a given date.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "The email address of the user to assign to the project."
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "The date of the activity"
+          },
+          "absence_time": {
+            "description": "The amount of time to report in percent for this absence for the day. Example 0, 25, 50, 75 or 100. ",
+            "enum": [
+              0,
+              25,
+              50,
+              75,
+              100
+            ]
+          },
+          "reason": {
+            "enum": [
+              "RTT",
+              "Conges",
+              "Maladie"
+            ],
+            "description": "Reason for the absence. RTT = Additional Payed Leave, Conges = Payed Leave, Maladie = Sick leave"
+          }
+        },
+        "required": [
+          "email",
+          "date",
+          "absence_time",
+          "reason"
+        ]
+      }
+    }
+  }
+]

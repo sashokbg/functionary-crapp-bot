@@ -169,6 +169,7 @@
           },
           "work_time": {
             "description": "The amount of time to report in percents of the day. Example 0, 25, 50, 75 or 100. ",
+            "default": 100,
             "enum": [
               0,
               25,
@@ -182,6 +183,51 @@
           "email",
           "project_code",
           "date",
+          "work_time"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "bulk_add_activities",
+      "description": "Add multiple activities for a project for a range of dates. This function can be used to fill entire weeks.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "project_code": {
+            "type": "string",
+            "description": "The code of the project that this user will be assigned to."
+          },
+          "email": {
+            "type": "string",
+            "description": "The email address of the user to assign to the project."
+          },
+          "dates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "The dates of the activities"
+          },
+          "work_time": {
+            "description": "The amount of time to report in percents of the day. Example 0, 25, 50, 75 or 100. ",
+            "default": 100,
+            "enum": [
+              0,
+              25,
+              50,
+              75,
+              100
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "project_code",
+          "dates",
           "work_time"
         ]
       }
@@ -206,6 +252,7 @@
           },
           "absence_time": {
             "description": "The amount of time to report in percent for this absence for the day. Example 0, 25, 50, 75 or 100. ",
+            "default": 100,
             "enum": [
               0,
               25,

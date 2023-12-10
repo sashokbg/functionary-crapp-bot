@@ -97,6 +97,11 @@ def add_activity(activity_json):
     return response.status_code
 
 
+def bulk_add_activities(activity_json):
+    print(f"Adding bulk activities {activity_json}")
+    return 200
+
+
 def add_absence(activity_json):
     absence = json.loads(activity_json)
     api_url = "http://localhost:8080/v2/private/activity-report"

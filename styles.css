@@ -1,0 +1,10 @@
+#board {
+  min-width: 80%;
+  border: 2px solid gray;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+#prompt {
+  min-width: 80%;
+}

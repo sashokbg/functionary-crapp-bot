@@ -1,0 +1,75 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body>
+
+    <div id="board">
+    </div>
+
+    Prompt:
+    <textarea id="prompt" onkeydown="keyHandle(event)">
+    </textarea>
+
+    <button onClick="send()">Send</button>
+    <button onClick="restart()" disabled>Restart</button>
+
+    <script>
+      const socket = io("http://localhost:5000");
+      const messages = [];
+      const promp = document.getElementById("prompt");
+      const board = document.getElementById("board");
+
+      const keyHandle = () => {
+        if(event.keyCode == 13 && event.ctrlKey){
+          send();
+        }
+      }
+
+
+      console.log("Prompt is", promp);
+
+      socket.on("assistant-message", (data) => {
+        console.log("assistant message received", data);
+        messages.push({role: "assistant", "content": data.data.content})
+        updateBoard();
+      });
+
+      socket.on("system-message", (data) => {
+        console.log("system message received", data);
+        messages.push({role: "system", "content": data.data.content})
+        updateBoard();
+      });
+
+      const restart = () => {
+        socket.emit("restart-conversation");
+      }
+
+      const send = () => {
+        const text = promp.value;
+        console.log("Sending", text);
+
+        socket.emit("client-message", text);
+        messages.push({role: "user", "content": text})
+        console.log("Messages", messages);
+        updateBoard();
+        promp.value = "";
+      }
+
+      const updateBoard = () => {
+
+        let text = "";
+        for(const message of messages) {
+          text += `**${message.role}**: ${message.content}\n\n`
+        }
+
+        board.innerHTML =
+          marked.parse(text);
+      }
+    </script>
+
+  </body>
+</html>
+

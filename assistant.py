@@ -21,9 +21,9 @@ class Assistant:
         self.messages = [
             {"role": "system", "content": "Environment is Python3"},
             {"role": "system", "content": f'Current date is: {date.today()}'},
-            {"role": "system", "content": 'Locale is fr-FR'},
+            {"role": "system", "content": 'Locale is en-GB'},
             {"role": "system",
-                "content": "Currently connected user is 'aleksandar@company.com' Aleksandar KIRILOV"},
+                "content": "Currently connected user is 'aleksandar@company.com' Firstname Aleksandar Lastname KIRILOV"},
             {"role": "system", "content": "This program helps user fill in their monthly activity reports. Each activity "
                                           "report is associated to a project that user has worked on. Activities can be "
                                           "reported in increments of 25% per day. A single day cannot have more than 100% of "

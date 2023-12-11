@@ -26,8 +26,8 @@ def create_project(project_json):
     response = requests.post(api_url, json=project)
 
     print(f"Project create response {response}")
-    
-    return response.json();
+
+    return response.json()
 
 
 def get_all_employees():
@@ -71,13 +71,16 @@ def assign_project_to_employee(payload_json):
     return response.json()
 
 
-def add_activity(activity_json):
+def add_activities(activity_json):
     activity = json.loads(activity_json)
     api_url = "http://localhost:8080/v2/private/activity-report"
 
-    date_ = parser.parse(activity["date"])
-    to_post = {
-        "activities": [
+    activities = []
+
+    for act_date in activity["dates"]:
+        date_ = parser.parse(act_date)
+
+        activities.append(
             {
                 "projectCode": activity["project_code"],
                 "activities": [
@@ -92,20 +95,19 @@ def add_activity(activity_json):
                     }
                 ]
             }
-        ],
+        )
+
+    to_post = {
+        "activities": activities,
         "employeeEmail": activity["email"],
         "year": date_.strftime("%Y"),
         "month": date_.strftime("%m")
     }
 
+    print(f"Sending activities {to_post}")
     response = requests.post(api_url, json=to_post)
 
     return response.json()
-
-
-def bulk_add_activities(activity_json):
-    print(f"Adding bulk activities {activity_json}")
-    return 200
 
 
 def add_absence(activity_json):

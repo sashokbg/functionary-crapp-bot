@@ -101,14 +101,12 @@ class Assistant:
                     result = handlers.add_employee(func_param)
                 case 'assign_project_to_employee':
                     result = handlers.assign_project_to_employee(func_param)
-                case 'add_activity':
-                    result = handlers.add_activity(func_param)
+                case 'add_activities':
+                    result = handlers.add_activities(func_param)
                 case 'get_project_activities':
                     result = handlers.get_project_activities(func_param)
                 case 'add_absence':
                     result = handlers.add_absence(func_param)
-                case 'bulk_add_activities':
-                    result = handlers.bulk_add_activities(func_param)
 
             self.messages.append(
                 {"role": "function", "name": func_name, "content": result})

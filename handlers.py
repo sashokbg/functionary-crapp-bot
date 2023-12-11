@@ -22,8 +22,12 @@ def create_project(project_json):
     project["date"] = date.today().strftime("%Y-%m-%d")
     print(f"Creating a new project {project}")
     api_url = f"http://localhost:8080/v2/private/project"
-    requests.post(api_url, json=project)
-    return True
+
+    response = requests.post(api_url, json=project)
+
+    print(f"Project create response {response}")
+    
+    return response.json();
 
 
 def get_all_employees():
@@ -36,14 +40,16 @@ def add_employee(employee_json):
     employee = json.loads(employee_json)
     print(f"Creating a new employee {employee}")
     api_url = f"http://localhost:8080/v2/private/employees"
+
     response = requests.post(api_url, json=employee)
-    # curl.parse(response)
-    return True
+
+    return response.json()
 
 
 def get_all_projects():
     api_url = f"http://localhost:8080/v2/private/project"
     response = requests.get(api_url)
+
     return response.json()
 
 
@@ -62,7 +68,7 @@ def assign_project_to_employee(payload_json):
     api_url = "http://localhost:8080/v2/private/project"
     response = requests.post(api_url, json=response_project)
 
-    return response.status_code
+    return response.json()
 
 
 def add_activity(activity_json):
@@ -94,7 +100,7 @@ def add_activity(activity_json):
 
     response = requests.post(api_url, json=to_post)
 
-    return response.status_code
+    return response.json()
 
 
 def bulk_add_activities(activity_json):
@@ -129,7 +135,7 @@ def add_absence(activity_json):
     response = requests.post(api_url, json=to_post)
     curl.parse(response)
 
-    return response.status_code
+    return response.json()
 
 
 def get_project_activities(params_json):

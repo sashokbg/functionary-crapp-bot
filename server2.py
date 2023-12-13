@@ -18,12 +18,29 @@ def connect(sid, environ):
     print('connect ', sid)
 
 
+@sio.on('confirm-message')
+def client_message(sid, data):
+    print('User confirms ', data)
+    result = assistant.confirm()
+
+    print(f"RESULT FROM CONFIRM {result}")
+
+    while "function_call" in result:
+        result = assistant.confirm();
+
+    assistant.unconfirm()
+    sio.emit('assistant-message', {'data': result})
+
+
 @sio.on('client-message')
-def my_message(sid, data):
+def client_message(sid, data):
     print('message ', data)
     result = assistant.generate_message(data)
 
-    sio.emit('assistant-message', {'data': result})
+    if result["role"] == "system-confirm":
+        sio.emit('system-confirm', {'data': result})
+    else:
+        sio.emit('assistant-message', {'data': result})
 
 
 @sio.on('restart-conversation')

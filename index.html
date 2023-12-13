@@ -28,12 +28,22 @@
         }
       }
 
+      const confirm = (element) => {
+        socket.emit("confirm-message", {});
+        element.disabled = true;
+      }
 
       console.log("Prompt is", promp);
 
       socket.on("assistant-message", (data) => {
         console.log("assistant message received", data);
         messages.push({role: "assistant", "content": data.data.content})
+        updateBoard();
+      });
+
+      socket.on("system-confirm", (data) => {
+        console.log("confirm request received", data);
+        messages.push({role: "system", "action": data.data.content.function_call.name, "content": JSON.parse(data.data.content.function_call.arguments)})
         updateBoard();
       });
 
@@ -62,11 +72,28 @@
 
         let text = "";
         for(const message of messages) {
-          text += `**${message.role}**: ${message.content}\n\n`
+          if(message.action) {
+            text += `<div class="system-message">
+            <b>${message.role}</b>: The Assistant wants to perform the following action:
+              <div>
+                <b>Action</b>: ${message.action}
+              </div>
+              <div>
+                <b>Data</b>: ${JSON.stringify(message.content)}
+              </div>
+              <div>
+                <button onClick="confirm(this)">Confirm</button>
+              </div>
+            </div>
+            `
+          } else {
+            text += `<p><b>${message.role}</b>: ${message.content}</p>`
+          }
         }
 
-        board.innerHTML =
-          marked.parse(text);
+        board.innerHTML = text;
+
+        window.scrollTo(0, document.body.scrollHeight);
       }
     </script>
 

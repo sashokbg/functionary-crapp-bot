@@ -36,7 +36,6 @@ class Assistant:
         self.prompt_template = get_prompt_template_from_tokenizer(
             self.tokenizer)
 
-        self.user_confirm = False
 
     def run_inference(self):
         all_messages = list(self.messages) + [{"role": "assistant"}]
@@ -65,8 +64,6 @@ class Assistant:
         return result
 
     def confirm(self):
-        self.user_confirm = True
-
         func_name = self.function_call["function_call"]["name"]
         func_param = self.function_call["function_call"]["arguments"]
 
@@ -89,21 +86,12 @@ class Assistant:
                 result = handlers.get_project_activities(func_param)
             case 'add_absence':
                 result = handlers.add_absence(func_param)
+            case 'get_dates_of_week':
+                result = handlers.get_dates_of_week(func_param)
 
         self.messages.append(
             {"role": "function", "name": func_name, "content": result})
 
-        self.function_call = None
-
-        result_message = self.generate_message()
-
-        if self.function_call:
-            self.confirm()
-
-        return result_message
-
-    def unconfirm(self):
-        self.user_confirm = False
 
     def generate_message(self, user_input=None):
         if user_input is not None:
@@ -121,7 +109,9 @@ class Assistant:
 
             # Auto validate all get functions
             if "get" in func_name:
-                return self.confirm()
+                print("Autovalidating message")
+                self.confirm()
+                return self.generate_message()
 
             return {"role": "system-confirm", "content": inference}
         else:

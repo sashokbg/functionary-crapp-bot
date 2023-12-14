@@ -1,9 +1,28 @@
 import requests
-from datetime import date
+from datetime import date, timedelta
 import json
 from dateutil import parser
 
 import curl
+
+
+def get_dates_of_week(params):
+    print(f"Calling get_days_of_week {params}")
+
+    input_date = parser.parse(json.loads(params)["current_date"])
+
+    start_of_week = input_date - timedelta(days=input_date.weekday())
+
+    week = []
+
+    # Calculate and print dates for Monday to Friday
+    for i in range(5):  # Loop for five days (Monday to Friday)
+        current_date = start_of_week + timedelta(days=i)
+        week.append(current_date)
+
+    print(f"Week is {week}")
+
+    return week
 
 
 def get_projects_for_user(user_json):
@@ -57,6 +76,9 @@ def assign_project_to_employee(payload_json):
     payload = json.loads(payload_json)
     api_url = f"http://localhost:8080/v2/private/project/{payload['project_code']}"
     response = requests.get(api_url)
+
+    if response.status_code == 400:
+        return response.json()
 
     response_project = response.json()
 

@@ -2,7 +2,7 @@ import time
 import eventlet
 import socketio
 from assistant import Assistant
-import gc
+from datetime import date
 
 sio = socketio.Server(cors_allowed_origins='*')
 app = socketio.WSGIApp(sio, static_files={
@@ -10,11 +10,25 @@ app = socketio.WSGIApp(sio, static_files={
     '/styles.css': {'content_type': 'text/css', 'filename': 'styles.css'}
 })
 
-assistant = Assistant()
+context = [
+    {"role": "system", "content": "Client stdout is HTML capable"},
+    {"role": "system", "content": f'Current date is: {date.today()}'},
+    {"role": "system", "content": 'Locale is en-GB'},
+    {"role": "system",
+     "content": "Currently connected user is 'aleksandar@company.com' Firstname Aleksandar Lastname KIRILOV"},
+    {"role": "system", "content": "This program helps user fill in their monthly activity reports. Each activity "
+     "report is associated to a project that user has worked on. Activities can be "
+     "reported in increments of 25% per day. A single day cannot have more than 100% of "
+     "reported time - this includes activities and absences."},
+]
+
+assistant = Assistant(context)
+
 
 @sio.event
 def connect(sid, environ):
     print('connect ', sid)
+    sio.emit('system-context', assistant.messages)
 
 
 @sio.on('confirm-message')
@@ -45,13 +59,9 @@ def client_message(sid, data):
 @sio.on('restart-conversation')
 def restart(sid):
     print('restarting', )
-    assistant = None
-    gc.collect()
-
-    time.sleep(5)
-
-    assistant = Assistant()
-    sio.emit('system-message', {'data': 'Conversation restarted'})
+    assistant.init()
+    sio.emit('system-message', {'data': { 'content': 'Conversation restarted'}})
+    sio.emit('system-context', assistant.messages)
 
 
 @sio.event

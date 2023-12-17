@@ -1,101 +1,155 @@
 <html>
   <head>
+    <script
+        src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/styles.css" />
+
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
   </head>
+
   <body>
+    <div class="container d-grid gap-3">
+      <div class="page-header">
+        <h1>Activity Report Assistant <small class="text-muted">here to help you fill in your reports !</small></h1>
+      </div>
 
-    <div id="board">
-    </div>
+      <div class="d-flex flex-row-reverse">
+        <button class="btn btn-outline-primary ms-1" type="button" onClick="restart()">
+          Reset Conversation
+        </button>
 
-    Prompt:
-    <textarea id="prompt" onkeydown="keyHandle(event)">
-    </textarea>
+        <button class="btn btn-outline-primary ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#context" aria-expanded="false" aria-controls="context">
+          Show Context
+        </button>
 
-    <button onClick="send()">Send</button>
-    <button onClick="restart()" disabled>Restart</button>
+      </div>
 
-    <script>
-      const socket = io("http://localhost:5000");
-      const messages = [];
-      const promp = document.getElementById("prompt");
-      const board = document.getElementById("board");
+      <div class="card">
+        <div class="context-header card-header">
+          Context
+        </div>
+        <div class="collapse card-body" id="context">
+        </div>
+      </div>
 
-      const keyHandle = () => {
-        if(event.keyCode == 13 && event.ctrlKey){
-          send();
-        }
-      }
+      <div class="card">
+        <div class="card-header">
+          Message Board
+        </div>
+        <div class="card-body" id="board">
+        </div>
+      </div>
 
-      const confirm = (element) => {
-        socket.emit("confirm-message", {});
-        element.disabled = true;
-      }
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="basic-addon1">&gt;</span>
+        </div>
+        <input id="prompt" onkeydown="keyHandle(event)" type="text" class="form-control" placeholder="Input Text" aria-label="Input Text" aria-describedby="basic-addon1">
+        <div class="input-group-append">
+          <button class="btn btn-outline-primary" onClick="send()" type="button">Send</button>
+        </div>
+      </div>
 
-      console.log("Prompt is", promp);
+      <script>
+        const socket = io("http://localhost:5000");
+        const messages = [];
+        let context = [];
+        const promp = document.getElementById("prompt");
 
-      socket.on("assistant-message", (data) => {
-        console.log("assistant message received", data);
-        messages.push({role: "assistant", "content": data.data.content})
-        updateBoard();
-      });
-
-      socket.on("system-confirm", (data) => {
-        console.log("confirm request received", data);
-        messages.push({role: "system", "action": data.data.content.function_call.name, "content": JSON.parse(data.data.content.function_call.arguments)})
-        updateBoard();
-      });
-
-      socket.on("system-message", (data) => {
-        console.log("system message received", data);
-        messages.push({role: "system", "content": data.data.content})
-        updateBoard();
-      });
-
-      const restart = () => {
-        socket.emit("restart-conversation");
-      }
-
-      const send = () => {
-        const text = promp.value;
-        console.log("Sending", text);
-
-        socket.emit("client-message", text);
-        messages.push({role: "user", "content": text})
-        console.log("Messages", messages);
-        updateBoard();
-        promp.value = "";
-      }
-
-      const updateBoard = () => {
-
-        let text = "";
-        for(const message of messages) {
-          if(message.action) {
-            text += `<div class="system-message">
-            <b>${message.role}</b>: The Assistant wants to perform the following action:
-              <div>
-                <b>Action</b>: ${message.action}
-              </div>
-              <div>
-                <b>Data</b>: ${JSON.stringify(message.content)}
-              </div>
-              <div>
-                <button onClick="confirm(this)">Confirm</button>
-              </div>
-            </div>
-            `
-          } else {
-            text += `<p><b>${message.role}</b>: ${message.content}</p>`
+        const keyHandle = () => {
+          if(event.keyCode == 13 && event.ctrlKey){
+            send();
           }
         }
 
-        board.innerHTML = text;
+        const confirm = (element) => {
+          socket.emit("confirm-message", {});
+          element.disabled = true;
+        }
 
-        window.scrollTo(0, document.body.scrollHeight);
-      }
-    </script>
+        console.log("Prompt is", promp);
+
+        socket.on("assistant-message", (data) => {
+          console.log("assistant message received", data);
+          messages.push({role: "assistant", "content": data.data.content})
+          updateBoard("board", messages);
+        });
+
+        socket.on("system-confirm", (data) => {
+          console.log("confirm request received", data);
+          messages.push({role: "system", "action": data.data.content.function_call.name, "content": JSON.parse(data.data.content.function_call.arguments)})
+          updateBoard("board", messages);
+        });
+
+        socket.on("system-message", (data) => {
+          console.log("system message received", data);
+          messages.push({role: "system", "content": data.data.content})
+          updateBoard("board", messages);
+        });
+
+        socket.on("system-context", (data) => {
+          console.log("Received new context", data);
+
+          Array.prototype.push.apply(context, data);
+          updateBoard("context", context)
+        })
+
+        const restart = () => {
+          context = []
+          updateBoard("context", context)
+          socket.emit("restart-conversation");
+        }
+
+        const send = () => {
+          const text = promp.value;
+          console.log("Sending", text);
+
+          socket.emit("client-message", text);
+          messages.push({role: "user", "content": text})
+          console.log("Messages", messages);
+          updateBoard("board", messages);
+          promp.value = "";
+        }
+
+        const updateBoard = (id, items) => {
+          const board = document.getElementById(id);
+
+          let text = "";
+          for(const message of items) {
+            if(message.action) {
+              text += `<div class="alert alert-primary" role="alert">
+                <b>${message.role}</b>: The Assistant wants to perform the following action:
+                <div>
+                <b>Action</b>: ${message.action}
+                </div>
+                <div>
+                <b>Data</b>: ${JSON.stringify(message.content)}
+                </div>
+                <div>
+                <button class="btn btn-warning" onClick="confirm(this)">Confirm</button>
+                </div>
+                </div>
+                `
+            } else {
+              text += `<div class=""><b>${message.role}</b>: ${message.content}</div>`
+            }
+          }
+
+          board.innerHTML = text;
+
+          window.scrollTo(0, document.body.scrollHeight);
+        }
+      </script>
 
   </body>
 </html>

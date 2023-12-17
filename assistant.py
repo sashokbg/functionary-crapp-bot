@@ -11,30 +11,25 @@ pp = pprint.PrettyPrinter(indent=2)
 
 
 class Assistant:
-    def __init__(self):
+    def __init__(self, init_context):
         json_text = open("functions.json", "r").read()
 
         self.functions = json.loads(json_text)
 
         self.llm = Llama(model_path="models/functionary-7b-v1.4.q4_0.gguf",
                          n_ctx=4096, n_gpu_layers=35, verbose=True)
-        self.messages = [
-            {"role": "system", "content": "Client stdout is HTML capable"},
-            {"role": "system", "content": f'Current date is: {date.today()}'},
-            {"role": "system", "content": 'Locale is en-GB'},
-            {"role": "system",
-                "content": "Currently connected user is 'aleksandar@company.com' Firstname Aleksandar Lastname KIRILOV"},
-            {"role": "system", "content": "This program helps user fill in their monthly activity reports. Each activity "
-                                          "report is associated to a project that user has worked on. Activities can be "
-                                          "reported in increments of 25% per day. A single day cannot have more than 100% of "
-                                          "reported time - this includes activities and absences."},
-        ]
 
         self.tokenizer = AutoTokenizer.from_pretrained(
             "meetkai/functionary-7b-v1.4", legacy=True)
 
         self.prompt_template = get_prompt_template_from_tokenizer(
             self.tokenizer)
+
+        self.init_context = init_context
+        self.init()
+
+    def init(self):
+        self.messages = self.init_context.copy()
 
 
     def run_inference(self):

@@ -8,16 +8,14 @@ body {
 
 #board {
   min-width: 80%;
-  border: 2px solid gray;
-  padding: 1rem;
-  margin-bottom: 1rem;
 }
 
 #prompt {
   min-width: 80%;
 }
 
-.system-message {
-  background-color: lightsteelblue;
-  padding: 1rem 0 0 0;
+.context-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

@@ -28,6 +28,8 @@ def get_dates_of_week(params):
 def get_projects_for_user(user_json):
     user = json.loads(user_json)
 
+    print(f"User {user}")
+
     api_url = f"http://localhost:8080/v2/private/project?user={user['email']}"
     response = requests.get(api_url)
 
@@ -105,11 +107,10 @@ def add_activities(activity_json):
         activities.append(
             {
                 "projectCode": activity["project_code"],
-                "activities": [
+                "projects": [
                     {
-                        "title": activity["project_code"],
+                        "name": activity["project_code"],
                         "percentage": activity["work_time"],
-                        "type": "Project",
                         "date": date_.strftime("%Y-%m-%d"),
                         "project": {
                             "code": activity["project_code"]
@@ -140,7 +141,7 @@ def add_absence(activity_json):
     to_post = {
         "activities": [
             {
-                "activities": [
+                "absences": [
                     {
                         "title": absence["reason"],
                         "percentage": absence["absence_time"],

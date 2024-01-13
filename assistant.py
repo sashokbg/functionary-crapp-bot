@@ -31,7 +31,6 @@ class Assistant:
     def init(self):
         self.messages = self.init_context.copy()
 
-
     def run_inference(self):
         all_messages = list(self.messages) + [{"role": "assistant"}]
 
@@ -40,6 +39,7 @@ class Assistant:
         token_ids = self.tokenizer.encode(prompt_str)
 
         gen_tokens = []
+
         # Get list of stop_tokens
         stop_token_ids = [self.tokenizer.encode(
             token)[-1] for token in self.prompt_template.get_stop_tokens_for_generation()]
@@ -86,7 +86,6 @@ class Assistant:
 
         self.messages.append(
             {"role": "function", "name": func_name, "content": result})
-
 
     def generate_message(self, user_input=None):
         if user_input is not None:

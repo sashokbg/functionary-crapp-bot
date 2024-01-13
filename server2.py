@@ -3,6 +3,8 @@ import eventlet
 import socketio
 from assistant import Assistant
 from datetime import date
+import handlers
+from json import dumps
 
 sio = socketio.Server(cors_allowed_origins='*')
 app = socketio.WSGIApp(sio, static_files={
@@ -10,12 +12,21 @@ app = socketio.WSGIApp(sio, static_files={
     '/styles.css': {'content_type': 'text/css', 'filename': 'styles.css'}
 })
 
+current_user = 'aleksandar@company.com'
+
+projects = handlers.get_projects_for_user(
+    '{"email": "'+current_user+'"}')
+
+
 context = [
     {"role": "system", "content": "Client stdout is HTML capable"},
     {"role": "system", "content": f'Current date is: {date.today()}'},
     {"role": "system", "content": 'Locale is en-GB'},
+    {"role": "system", "content": 'Holidays: ["2023-12-25"]'},
     {"role": "system",
-     "content": "Currently connected user is 'aleksandar@company.com' Firstname Aleksandar Lastname KIRILOV"},
+     "content": f"Currently connected user is '{current_user}' Firstname Aleksandar Lastname KIRILOV"},
+    {"role": "system",
+     "content": f"User's assigned project {projects}"},
     {"role": "system", "content": "This program helps user fill in their monthly activity reports. Each activity "
      "report is associated to a project that user has worked on. Activities can be "
      "reported in increments of 25% per day. A single day cannot have more than 100% of "
@@ -60,7 +71,7 @@ def client_message(sid, data):
 def restart(sid):
     print('restarting', )
     assistant.init()
-    sio.emit('system-message', {'data': { 'content': 'Conversation restarted'}})
+    sio.emit('system-message', {'data': {'content': 'Conversation restarted'}})
     sio.emit('system-context', assistant.messages)
 
 

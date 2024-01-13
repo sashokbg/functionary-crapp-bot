@@ -10,6 +10,11 @@ body {
   min-width: 80%;
 }
 
+#board table, #board th, #board td {
+  border: 1px solid black;
+  padding: 3px;
+}
+
 #prompt {
   min-width: 80%;
 }

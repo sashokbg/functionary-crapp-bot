@@ -12,7 +12,7 @@ app = socketio.WSGIApp(sio, static_files={
     '/styles.css': {'content_type': 'text/css', 'filename': 'styles.css'}
 })
 
-current_user = 'aleksandar@company.com'
+current_user = 'aleksandar.kirilov@proxym.fr'
 
 projects = handlers.get_projects_for_user(
     '{"email": "'+current_user+'"}')
@@ -36,6 +36,15 @@ context = [
 assistant = Assistant(context)
 
 
+def send_client_callback(message):
+    print("Callback called", message)
+
+    if message["role"] == "system-confirm":
+        sio.emit('system-confirm', message)
+    else:
+        sio.emit('assistant-message', message)
+
+
 @sio.event
 def connect(sid, environ):
     print('connect ', sid)
@@ -45,26 +54,22 @@ def connect(sid, environ):
 @sio.on('confirm-message')
 def confirm_message(sid, data):
     print('User confirms ', data)
-    assistant.confirm()
-    result = assistant.generate_message()
+    assistant.confirm(data["tool_id"])
 
-    if result["role"] == "system-confirm":
-        sio.emit('system-confirm', {'data': result})
-    else:
-        sio.emit('assistant-message', {'data': result})
+    if not assistant.function_calls:
+        assistant.generate_message(send_client_callback)
+
+        # if result["role"] == "system-confirm":
+        #     sio.emit('system-confirm', {'data': result})
+        # else:
+        #     sio.emit('assistant-message', {'data': result})
 
 
 @sio.on('client-message')
 def client_message(sid, data):
     print('message ', data)
-    result = assistant.generate_message(data)
-
-    print('generated result ', result)
-
-    if result["role"] == "system-confirm":
-        sio.emit('system-confirm', {'data': result})
-    else:
-        sio.emit('assistant-message', {'data': result})
+    assistant.function_calls.clear()
+    assistant.generate_message(send_client_callback, data)
 
 
 @sio.on('restart-conversation')

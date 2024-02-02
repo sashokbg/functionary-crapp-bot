@@ -16,15 +16,16 @@ class Assistant:
 
         self.functions = json.loads(json_text)
 
-        self.llm = Llama(model_path="models/functionary-7b-v1.4.q4_0.gguf",
+        self.llm = Llama(model_path="models/functionary-small-v2.2.q4_0.gguf",
                          n_ctx=4096, n_gpu_layers=35, verbose=True)
 
         self.tokenizer = AutoTokenizer.from_pretrained(
-            "meetkai/functionary-7b-v1.4", legacy=True)
+            "meetkai/functionary-small-v2.2-GGUF", legacy=True)
 
         self.prompt_template = get_prompt_template_from_tokenizer(
             self.tokenizer)
 
+        self.function_calls = {}
         self.init_context = init_context
         self.init()
 
@@ -58,9 +59,12 @@ class Assistant:
 
         return result
 
-    def confirm(self):
-        func_name = self.function_call["function_call"]["name"]
-        func_param = self.function_call["function_call"]["arguments"]
+    def confirm(self, func_id):
+        func_call = self.function_calls[func_id]
+        func_name = func_call["function"]["name"]
+        func_param = func_call["function"]["arguments"]
+
+        result = None
 
         match func_name:
             case 'get_all_projects':
@@ -85,9 +89,11 @@ class Assistant:
                 result = handlers.get_dates_of_week(func_param)
 
         self.messages.append(
-            {"role": "function", "name": func_name, "content": result})
+            {"role": "tool", "tool_call_id": func_id, "name": func_name, "content": result})
 
-    def generate_message(self, user_input=None):
+        del self.function_calls[func_id]
+
+    def generate_message(self, send_client_callback, user_input=None):
         if user_input is not None:
             self.messages.append({"role": "user", "content": user_input})
 
@@ -97,16 +103,22 @@ class Assistant:
 
         self.messages.append(inference)
 
-        if "function_call" in inference:
-            self.function_call = inference
-            func_name = self.function_call["function_call"]["name"]
+        tool_calls = inference["tool_calls"]
+
+        for tool_call in tool_calls:
+            tool_id = tool_call["id"]
+            self.function_calls[tool_id] = tool_call
+            func_name = tool_call["function"]["name"]
 
             # Auto validate all get functions
             if "get" in func_name:
                 print("Autovalidating message")
-                self.confirm()
-                return self.generate_message()
+                self.confirm(tool_id)
+                self.generate_message(send_client_callback)
+            else:
+                print("Message needs validation")
+                send_client_callback({"role": "system-confirm", "content": tool_call, "tool_id": tool_id})
 
-            return {"role": "system-confirm", "content": inference}
-        else:
-            return inference
+        if not tool_calls:
+            print("No tool calls", inference)
+            send_client_callback(inference)

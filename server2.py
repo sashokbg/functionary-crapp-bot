@@ -12,7 +12,7 @@ app = socketio.WSGIApp(sio, static_files={
     '/styles.css': {'content_type': 'text/css', 'filename': 'styles.css'}
 })
 
-current_user = 'aleksandar@company.com'
+current_user = 'aleksandar.kirilov@proxym.fr'
 
 projects = handlers.get_projects_for_user(
     '{"email": "'+current_user+'"}')
@@ -22,7 +22,7 @@ context = [
     {"role": "system", "content": "Client stdout is HTML capable"},
     {"role": "system", "content": f'Current date is: {date.today()}'},
     {"role": "system", "content": 'Locale is en-GB'},
-    {"role": "system", "content": 'Holidays: ["2023-12-25"]'},
+    {"role": "system", "content": 'Holidays: ["2023-12-25", "2024-01-01"]'},
     {"role": "system",
      "content": f"Currently connected user is '{current_user}' Firstname Aleksandar Lastname KIRILOV"},
     {"role": "system",

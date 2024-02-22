@@ -6,6 +6,7 @@ import sys
 import pprint
 import handlers
 from datetime import date
+from datetime import datetime
 
 pp = pprint.PrettyPrinter(indent=2)
 
@@ -59,7 +60,7 @@ class Assistant:
 
         return result
 
-    def confirm(self, func_id):
+    def confirm(self, func_id, data = ""):
         func_call = self.function_calls[func_id]
         func_name = func_call["function"]["name"]
         func_param = func_call["function"]["arguments"]
@@ -85,8 +86,8 @@ class Assistant:
                 result = handlers.get_project_activities(func_param)
             case 'add_absence':
                 result = handlers.add_absence(func_param)
-            case 'get_dates_of_week':
-                result = handlers.get_dates_of_week(func_param)
+            case 'prompt_date':
+                result = data
 
         self.messages.append(
             {"role": "tool", "tool_call_id": func_id, "name": func_name, "content": result})
@@ -117,7 +118,7 @@ class Assistant:
                 self.generate_message(send_client_callback)
             else:
                 print("Message needs validation")
-                send_client_callback({"role": "system-confirm", "content": tool_call, "tool_id": tool_id})
+                send_client_callback({"role": "system-confirm", "content": inference["content"], "function": tool_call["function"], "tool_id": tool_id})
 
         if not tool_calls:
             print("No tool calls", inference)

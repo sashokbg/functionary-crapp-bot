@@ -54,7 +54,7 @@ def connect(sid, environ):
 @sio.on('confirm-message')
 def confirm_message(sid, data):
     print('User confirms ', data)
-    assistant.confirm(data["tool_id"])
+    assistant.confirm(data["tool_id"], data["data"])
 
     if not assistant.function_calls:
         assistant.generate_message(send_client_callback)

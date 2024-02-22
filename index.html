@@ -79,11 +79,6 @@
           }
         }
 
-        const confirm = (element, tool_id) => {
-          socket.emit("confirm-message", {tool_id: tool_id});
-          element.disabled = true;
-        }
-
         console.log("Prompt is", promp);
 
         socket.on("assistant-message", (data) => {
@@ -96,9 +91,9 @@
           console.log("confirm request received", data);
           messages.push({
             role: "system",
-            "action": data.content.function.name,
-            conent: data.content.content,
-            function: JSON.parse(data.content.function.arguments),
+            "action": data.function.name,
+            content: data.content,
+            function: JSON.parse(data.function.arguments),
             tool_id: data.tool_id
           })
           updateBoard("board", messages);
@@ -134,39 +129,138 @@
           promp.value = "";
         }
 
+        const confirm = (element, tool_id) => {
+          let dateObj = {date_start: document.getElementById('start').value, date_end: document.getElementById('end').value};
+
+          let confirmMessage = {tool_id: tool_id, data: dateObj};
+          console.log("sending confirm message to server", confirmMessage);
+
+          socket.emit("confirm-message", confirmMessage);
+          element.disabled = true;
+        }
+
+        const onDate = () => {
+          if(document.getElementById('start').value && document.getElementById('start').value) {
+            document.getElementById('date-confirm').disabled = false;
+          }
+        }
+
         const updateBoard = (id, items) => {
           const board = document.getElementById(id);
 
-          let text = "";
           for (const message of items) {
-            let content = message.content ? `<div class=""><b>${message.role}</b>: ${message.content}</div>` : undefined;
-            if(content) {
-              text += content;
+            if(message.wasShown) {
+              continue;
+            }
+
+            if(message.content) {
+              let div = document.createElement("div");
+              let bolded = document.createElement("b");
+              bolded.textContent = message.role;
+              let text = document.createTextNode(`: ${message.content}`);
+
+              div.appendChild(bolded);
+              div.appendChild(text);
+
+              board.appendChild(div);
             }
 
             if (message.action) {
-              text += `<div class="alert alert-primary" role="alert">
-                <b>${message.role}</b>: The Assistant wants to perform the following action:
-                <div>
-                <b>Action</b>: ${message.action}
-                </div>
-                <div>
-                <b>Data</b>: ${JSON.stringify(message.function)}
-                </div>
-                <div>
-                <button class="btn btn-warning" onClick="confirm(this, '${message.tool_id}')">Confirm</button>
-                </div>
-                </div>
-                `
-            }
-          }
+              if (message.action === 'prompt_date') {
+                // Create the first div for Start date
+                var divStart = document.createElement('div');
 
-          board.innerHTML = text;
+                // Create label for Start date
+                var labelStart = document.createElement('label');
+                labelStart.className = 'date-label';
+                labelStart.setAttribute('for', 'start');
+                labelStart.textContent = 'Start date:';
+
+                // Create input for Start date
+                var inputStart = document.createElement('input');
+                inputStart.className = 'date-input';
+                inputStart.type = 'date';
+                inputStart.id = 'start';
+                inputStart.name = 'start';
+                // inputStart.addEventListener('change', function() {
+                //   onDate(this);
+                // });
+
+                // Append label and input to the first div
+                divStart.appendChild(labelStart);
+                divStart.appendChild(inputStart);
+
+                // Append the first div to the body
+                board.appendChild(divStart);
+
+                // Create the second div for End date
+                var divEnd = document.createElement('div');
+
+                // Create label for End date
+                var labelEnd = document.createElement('label');
+                labelEnd.className = 'date-label';
+                labelEnd.setAttribute('for', 'end');
+                labelEnd.textContent = 'End date:';
+
+                // Create input for End date
+                var inputEnd = document.createElement('input');
+                inputEnd.className = 'date-input';
+                inputEnd.type = 'date';
+                inputEnd.id = 'end';
+                inputEnd.name = 'end';
+
+                // Append label and input to the second div
+                divEnd.appendChild(labelEnd);
+                divEnd.appendChild(inputEnd);
+
+                // Append the second div to the body
+                board.appendChild(divEnd);
+
+                // Create the button
+                var button = document.createElement('button');
+                button.className = 'btn btn-warning';
+                // button.disabled = true;
+                button.id = 'date-confirm';
+                button.textContent = 'Confirm';
+                button.addEventListener('click', function() {
+                  confirm(this, message.tool_id);
+                });
+
+                // Append the button to the body
+                board.appendChild(button);
+              } else {
+                var alertDiv = document.createElement("div");
+                alertDiv.classList.add("alert", "alert-primary");
+                alertDiv.setAttribute("role", "alert");
+
+                alertDiv.appendChild(document.createTextNode(`${message.role}: the assistant wants to perform the following action:`));
+                alertDiv.appendChild(document.createElement("div")).innerHTML = `<b>action</b>: ${message.action}`;
+                alertDiv.appendChild(document.createElement("div")).innerHTML = `<b>data</b>: ${JSON.stringify(message.function)}`;
+                alertDiv.appendChild(document.createElement("div")).innerHTML = `<b>tool id</b>: ${message.tool_id}`;
+
+                // Create the confirm button
+                var confirmButton = document.createElement("button");
+                confirmButton.classList.add("btn", "btn-warning");
+                confirmButton.innerHTML = "confirm";
+
+                // Add a click event listener to the confirm button
+                confirmButton.addEventListener("click", function() {
+                  confirm(this, message.tool_id);
+                });
+
+                // Append the confirm button to the alert div
+                alertDiv.appendChild(document.createElement("div").appendChild(confirmButton));
+
+                board.appendChild(alertDiv);
+              }
+            }
+            message.wasShown = true;
+          }
 
           window.scrollTo(0, document.body.scrollHeight);
         }
       </script>
-
+    </div>
   </body>
 </html>
 

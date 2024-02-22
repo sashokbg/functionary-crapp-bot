@@ -2,27 +2,12 @@ import requests
 from datetime import date, timedelta
 import json
 from dateutil import parser
+import parsedatetime
 
 import curl
 
-
-def get_dates_of_week(params):
-    print(f"Calling get_days_of_week {params}")
-
-    input_date = parser.parse(json.loads(params)["current_date"])
-
-    start_of_week = input_date - timedelta(days=input_date.weekday())
-
-    week = []
-
-    # Calculate and print dates for Monday to Friday
-    for i in range(5):  # Loop for five days (Monday to Friday)
-        current_date = start_of_week + timedelta(days=i)
-        week.append(current_date)
-
-    print(f"Week is {week}")
-
-    return week
+def prompt_date(params):
+    print(f"Calling date calculation {params}")
 
 
 def get_projects_for_user(user_json):

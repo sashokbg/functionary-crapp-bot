@@ -24,3 +24,13 @@ body {
   align-items: center;
   justify-content: space-between;
 }
+
+.date-label {
+  display: block;
+  font: 1rem 'Fira Sans',sans-serif;
+}
+
+.date-input,.date-label {
+  margin: 0.4rem 0;
+}
+

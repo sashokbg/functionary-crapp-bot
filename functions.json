@@ -2,23 +2,9 @@
   {
     "type": "function",
     "function": {
-      "name": "get_dates_of_week",
-      "description": "Get the list of work days of the current week",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "current_date": {
-            "type": "string",
-            "format": "date",
-            "description": "The current day"
-          }
-        },
-        "required": [
-          "current_date"
-        ]
-      }
+      "name": "prompt_date",
+      "description": "Ask the user for what date or period they want to report an action. The function returns activity start and end dates."
     }
-
   },
   {
     "type": "function",
